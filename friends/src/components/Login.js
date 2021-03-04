@@ -1,53 +1,61 @@
-import React from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import { useHistory } from "react-router-dom";
+import { axiosWithAuth } from "../utils/axiosWithAuth";
 
-class Login extends React.Component {
-    state = {
-        credentials: {
-            username: "",
-            password: ""
-        }
-    }
+const Login = (props) => {
+  const [formInput, setFormInput] = useState({
+    username: "",
+    password: "",
+  });
 
+  let history = useHistory();
 
-    handleChange = e => {
-       this.setState(
-            {
-                credentials:{
-                    ...this.state.credentials, [e.target.name]: e.target.value
-                } 
-            });
-    }
+  const handleChange = (e) => {
+    setFormInput({
+      ...formInput,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-    login = e => {
-        e.preventDefault();
+  const login = (e) => {
+    e.preventDefault();
 
-        axios.post('http://localhost:5000/api/login', this.state.credentials).then(res => res).catch(err => console.log("There was an error", err));
-    }
-    render(){
-        return(
-            <div>
-                <form onSubmit = {this.login}>
-                <input
-                type="text"
-                name="username"
-                value={this.state.credentials.username}
-                onChange={this.handleChange}
-                />
-    
-                <input
-                type="password"
-                name="password"
-                value={this.state.credentials.password}
-                onChange={this.handleChange}
-                />
-                <button>Log in</button>
-                </form>     
-            </div>
-        )
-    }
-    
-}
+    axiosWithAuth()
+      .post("/api/login", formInput)
+      .then((res) => {
+        window.localStorage.setItem("token", res.data.payload);
 
+        history.push("/dashboard");
+      })
+      .catch((err) => console.log("There was an error", err));
+  };
+
+  return (
+    <div>
+      <form
+        style={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+        onSubmit={login}
+      >
+        <input
+          type="text"
+          name="username"
+          value={formInput.username}
+          onChange={handleChange}
+        />
+
+        <input
+          type="password"
+          name="password"
+          value={formInput.password}
+          onChange={handleChange}
+        />
+        <button>Log in</button>
+      </form>
+    </div>
+  );
+};
 
 export default Login;
